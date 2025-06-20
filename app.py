@@ -1,10 +1,17 @@
 import streamlit as st
 import numpy as np
 import joblib
-import plotly.graph_objects as go
-import plotly.express as px
 from datetime import datetime
 import pandas as pd
+
+# Try to import plotly, use fallback if not available
+try:
+    import plotly.graph_objects as go
+    import plotly.express as px
+    PLOTLY_AVAILABLE = True
+except ImportError:
+    PLOTLY_AVAILABLE = False
+    st.warning("📊 Plotly tidak tersedia. Menggunakan visualisasi alternatif.")
 
 # Konfigurasi halaman
 st.set_page_config(
@@ -334,26 +341,39 @@ with tab1:
                 )
             
             # Visualisasi hasil
-            fig = go.Figure(go.Indicator(
-                mode = "gauge+number+delta",
-                value = confidence * 100,
-                domain = {'x': [0, 1], 'y': [0, 1]},
-                title = {'text': "Confidence Score (%)"},
-                delta = {'reference': 50},
-                gauge = {
-                    'axis': {'range': [None, 100]},
-                    'bar': {'color': "darkblue"},
-                    'steps': [
-                        {'range': [0, 50], 'color': "lightgray"},
-                        {'range': [50, 80], 'color': "yellow"},
-                        {'range': [80, 100], 'color': "green"}],
-                    'threshold': {
-                        'line': {'color': "red", 'width': 4},
-                        'thickness': 0.75,
-                        'value': 90}}))
-            
-            fig.update_layout(height=300)
-            st.plotly_chart(fig, use_container_width=True)
+            if PLOTLY_AVAILABLE:
+                fig = go.Figure(go.Indicator(
+                    mode = "gauge+number+delta",
+                    value = confidence * 100,
+                    domain = {'x': [0, 1], 'y': [0, 1]},
+                    title = {'text': "Confidence Score (%)"},
+                    delta = {'reference': 50},
+                    gauge = {
+                        'axis': {'range': [None, 100]},
+                        'bar': {'color': "darkblue"},
+                        'steps': [
+                            {'range': [0, 50], 'color': "lightgray"},
+                            {'range': [50, 80], 'color': "yellow"},
+                            {'range': [80, 100], 'color': "green"}],
+                        'threshold': {
+                            'line': {'color': "red", 'width': 4},
+                            'thickness': 0.75,
+                            'value': 90}}))
+                
+                fig.update_layout(height=300)
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                # Fallback visualization using native Streamlit
+                st.markdown("### 📊 Skor Keyakinan")
+                confidence_pct = confidence * 100
+                st.progress(confidence / 1.0)
+                
+                if confidence_pct >= 80:
+                    st.success(f"🟢 Tinggi: {confidence_pct:.1f}%")
+                elif confidence_pct >= 60:
+                    st.warning(f"🟡 Sedang: {confidence_pct:.1f}%")
+                else:
+                    st.error(f"🔴 Rendah: {confidence_pct:.1f}%")
             
             # Interpretasi hasil
             if confidence >= 0.8:
@@ -430,8 +450,12 @@ with tab2:
     st.dataframe(df, use_container_width=True)
     
     # Chart riwayat
-    fig = px.line(df, x='Tanggal', y='Confidence', title='Trend Akurasi Diagnosa')
-    st.plotly_chart(fig, use_container_width=True)
+    if PLOTLY_AVAILABLE:
+        fig = px.line(df, x='Tanggal', y='Confidence', title='Trend Akurasi Diagnosa')
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        # Fallback chart using Streamlit native
+        st.line_chart(df.set_index('Tanggal')['Confidence'])
 
 with tab3:
     st.markdown("### 📚 Edukasi tentang FPV")
