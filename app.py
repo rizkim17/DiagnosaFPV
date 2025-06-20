@@ -106,8 +106,8 @@ with st.sidebar:
 @st.cache_resource
 def load_models():
     try:
-        model = joblib.load("frandom_forest_fpv_model.pkl")
-        le = joblib.load("label_encoder_fpv.pkl")
+        model = joblib.load("fpv_model.pkl")
+        le = joblib.load("label_encoder.pkl")
         return model, le
     except:
         st.error("⚠️ Model tidak ditemukan. Pastikan file model tersedia.")
