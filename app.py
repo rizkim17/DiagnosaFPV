@@ -6,8 +6,8 @@ st.set_page_config(page_title="Diagnosa FPV - Hybrid", layout="centered")
 st.title("🧬 Diagnosa FPV pada Kucing")
 
 # Load model dan encoder
-model = joblib.load("fpv_model.pkl")
-le = joblib.load("label_encoder.pkl")
+model = joblib.load("frandom_forest_fpv_model.pkl")
+le = joblib.load("label_encoder_fpv.pkl")
 
 # --- GEJALA SECTION ---
 def gejala_section(title, questions):
